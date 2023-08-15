@@ -31,6 +31,8 @@
     "react-dom": "^18.2.0",
     "react-intersection-observer": "^9.4.1",
     "react-use": "^17.4.0",
+    "remix-auth": "^3.5.0",
+    "remix-auth-auth0": "^1.7.0",
     "schema-dts": "^1.1.0",
     "tiny-invariant": "^1.2.0",
     "typographic-base": "^1.0.4",

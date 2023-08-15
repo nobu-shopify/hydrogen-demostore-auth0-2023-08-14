@@ -9,6 +9,9 @@ import {getHeroPlaceholder} from '~/lib/placeholders';
 import {seoPayload} from '~/lib/seo.server';
 import {routeHeaders} from '~/data/cache';
 
+// for Auth0
+import {auth0UserProfile} from './($locale).account.login';
+
 export const headers = routeHeaders;
 
 export async function loader({params, context}) {
@@ -83,6 +86,8 @@ export default function Homepage() {
     featuredCollections,
     featuredProducts,
   } = useLoaderData();
+
+  console.log('auth0 user email', auth0UserProfile?.profile.emails[0].value);
 
   // TODO: skeletons vs placeholders
   const skeletons = getHeroPlaceholder([{}, {}, {}]);

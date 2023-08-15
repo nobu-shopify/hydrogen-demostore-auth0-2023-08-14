@@ -5,9 +5,21 @@ import {useState} from 'react';
 import {getInputStyleClasses} from '~/lib/utils';
 import {Link} from '~/components';
 
+// for Auth0
+import { sessionStorage } from '~/lib/session.server';
+import { Authenticator } from "remix-auth";
+import { Auth0Strategy } from "remix-auth-auth0";
+
 export const handle = {
   isPublic: true,
 };
+
+// for Auth0
+export var authenticator = null;
+export var auth0UserProfile = null;
+
+// for multipass
+export var multipassToken = null;
 
 export async function loader({context, params}) {
   const customerAccessToken = await context.session.get('customerAccessToken');
@@ -17,14 +29,49 @@ export async function loader({context, params}) {
   }
 
   // TODO: Query for this?
-  return json({shopName: 'Hydrogen'});
+  return (json({shopName: 'Hydrogen'}));
 }
 
 const badRequest = (data) => json(data, {status: 400});
 
 export const action = async ({request, context, params}) => {
-  const formData = await request.formData();
+  // for Auth0
+  if(!auth0UserProfile) {
+    let auth0Strategy = new Auth0Strategy(
+      {
+        callbackURL: "http://localhost:3000/auth0/callback/",
+        clientID: context.env.AUTH0_CLIENTID,
+        clientSecret: context.env.AUTH0_CLIENTSECRET,
+        domain: context.env.AUTH0_DOMAIN,
+      },
+      async ({ profile }) => {
+        //
+        // profile has the user data from Auth0
+        // ref: https://github.com/danestves/remix-auth-auth0/blob/main/src/index.ts#L27
+        // Get the user data from your DB or API using the profile
+        //
+        return copyProfile({ profile });
+      }
+    );
+    // Create an instance of the authenticator, pass a generic with what your
+    // strategies will return and will be stored in the session
+    const request2 = { ...request };
+    authenticator = new Authenticator(sessionStorage);
+    authenticator.use(auth0Strategy);
 
+    try {
+      return authenticator.authenticate("auth0", request2);
+    }
+    catch (error) {
+      return badRequest({
+        formError:
+          `Auth0 error: ${error}`,
+      });
+  }
+
+  }
+
+  const formData = await request.formData();
   const email = formData.get('email');
   const password = formData.get('password');
 
@@ -99,90 +146,23 @@ export default function Login() {
               <p className="m-4 text-s text-contrast">{actionData.formError}</p>
             </div>
           )}
-          <div>
-            <input
-              className={`mb-1 ${getInputStyleClasses(nativeEmailError)}`}
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              placeholder="Email address"
-              aria-label="Email address"
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-              onBlur={(event) => {
-                setNativeEmailError(
-                  event.currentTarget.value.length &&
-                    !event.currentTarget.validity.valid
-                    ? 'Invalid email address'
-                    : null,
-                );
-              }}
-            />
-            {nativeEmailError && (
-              <p className="text-red-500 text-xs">{nativeEmailError} &nbsp;</p>
-            )}
-          </div>
 
-          <div>
-            <input
-              className={`mb-1 ${getInputStyleClasses(nativePasswordError)}`}
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="Password"
-              aria-label="Password"
-              minLength={8}
-              required
-              // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
-              onBlur={(event) => {
-                if (
-                  event.currentTarget.validity.valid ||
-                  !event.currentTarget.value.length
-                ) {
-                  setNativePasswordError(null);
-                } else {
-                  setNativePasswordError(
-                    event.currentTarget.validity.valueMissing
-                      ? 'Please enter a password'
-                      : 'Passwords must be at least 8 characters',
-                  );
-                }
-              }}
-            />
-            {nativePasswordError && (
-              <p className="text-red-500 text-xs">
-                {' '}
-                {nativePasswordError} &nbsp;
-              </p>
-            )}
-          </div>
           <div className="flex items-center justify-between">
             <button
               className="bg-primary text-contrast rounded py-2 px-4 focus:shadow-outline block w-full"
               type="submit"
               disabled={!!(nativePasswordError || nativeEmailError)}
             >
-              Sign in
+              Sign in with Auth0
             </button>
           </div>
-          <div className="flex justify-between items-center mt-8 border-t border-gray-300">
-            <p className="align-baseline text-sm mt-6">
-              New to {shopName}? &nbsp;
-              <Link className="inline underline" to="/account/register">
-                Create an account
-              </Link>
-            </p>
-            <Link
-              className="mt-6 inline-block align-baseline text-sm text-primary/50"
-              to="/account/recover"
-            >
-              Forgot password
-            </Link>
-          </div>
+        </Form>
+        <Form action="/account/logout" method="post">
+          <button
+            className="bg-primary text-contrast rounded py-2 px-4 focus:shadow-outline block w-full"
+          >
+            Sign out with Auth0
+          </button>
         </Form>
       </div>
     </div>
@@ -225,4 +205,12 @@ export async function doLogin({storefront}, {email, password}) {
   throw new Error(
     data?.customerAccessTokenCreate?.customerUserErrors.join(', '),
   );
+}
+
+// for Auth0
+export async function copyProfile( profile ) {
+  // Copy profile
+  auth0UserProfile = profile;
+
+  return { profile };
 }

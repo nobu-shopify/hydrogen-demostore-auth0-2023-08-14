@@ -10017,6 +10017,29 @@ remedial@^1.0.7:
   resolved "https://registry.yarnpkg.com/remedial/-/remedial-1.0.8.tgz#a5e4fd52a0e4956adbaf62da63a5a46a78c578a0"
   integrity sha512-/62tYiOe6DzS5BqVsNpH/nkGlX45C/Sp6V+NtiN6JQNS1Viay7cWkazmRkrQrdFj2eshDe96SIQNIoMxqhzBOg==
 
+remix-auth-auth0@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/remix-auth-auth0/-/remix-auth-auth0-1.7.0.tgz#4152ab60554e30297018c79937fff75a2b84cec5"
+  integrity sha512-I6Au+6Witb6Ae1JmQEaOcKfaYCxayL5lsNJAQs4skuh0PRi2xZpB1oSH5NL9WN1+xZ29GnD56JDvSw0N/m3Qiw==
+  dependencies:
+    remix-auth-oauth2 "^1.5.0"
+
+remix-auth-oauth2@^1.5.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/remix-auth-oauth2/-/remix-auth-oauth2-1.8.0.tgz#7f3a794d60dae8e72fa209527832ed0336c34ae7"
+  integrity sha512-39C9bsc5vdHKRhlTCESzNwi5GMwd8p99ypqzZUEN/Kws/GO3o98qBhcSjPbmrZk5jlzXKx8RJU+ygS3d5Anl4A==
+  dependencies:
+    debug "^4.3.4"
+    remix-auth "^3.4.0"
+    uuid "^8.3.2"
+
+remix-auth@^3.4.0, remix-auth@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/remix-auth/-/remix-auth-3.5.0.tgz#ccbc2e8fdf8b2f4c8ec84fdd296a3ef928bfdc89"
+  integrity sha512-+0kFPhqNPQ4mjhDXViY5mG4jvWHWMsG1IXFiCj3T58BKQGynonk93vTFZ5/CCDzGFBjTsRpcA+mXCUW5LY8MdQ==
+  dependencies:
+    uuid "^8.3.2"
+
 remove-trailing-separator@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/remove-trailing-separator/-/remove-trailing-separator-1.1.0.tgz#c24bce2a283adad5bc3f58e0d48249b92379d8ef"
@@ -11580,6 +11603,11 @@ utils-merge@1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
+
+uuid@^8.3.2:
+  version "8.3.2"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
+  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
 uvu@^0.5.0:
   version "0.5.6"

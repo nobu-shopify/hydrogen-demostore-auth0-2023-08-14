@@ -1,5 +1,18 @@
 import {createCookieSessionStorage} from '@shopify/remix-oxygen';
 
+// for Auth0
+export let sessionStorage = createCookieSessionStorage({
+  cookie: {
+    name: "_session",
+    sameSite: "lax",
+    path: "/",
+    httpOnly: true,
+    secrets: ["s3cr3t"],
+  },
+});
+
+export let { getSession, commitSession, destroySession } = sessionStorage;
+
 /**
  * This is a custom session implementation for your Hydrogen shop.
  * Feel free to customize it to your needs, add helper methods, or
