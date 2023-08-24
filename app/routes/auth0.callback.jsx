@@ -5,6 +5,6 @@ export let loader = ({ request }) => {
 
   return authenticator.authenticate("auth0", request, {
     successRedirect: "/multipass/",
-    failureRedirect: "/account/login/",
+    failureRedirect: "/auth0/fail/",
   });
 };

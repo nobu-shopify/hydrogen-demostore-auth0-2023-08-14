@@ -27,13 +27,17 @@ import {ORDER_CARD_FRAGMENT} from '~/components/OrderCard';
 import {getFeaturedData} from './($locale).featured-products';
 import {doLogout} from './($locale).account.logout';
 
+// for Auth0
+import {auth0UserProfile} from './($locale).account.login';
+
 export const headers = routeHeaders;
 
 export async function loader({request, context, params}) {
   const {pathname} = new URL(request.url);
   const locale = params.locale;
   const customerAccessToken = await context.session.get('customerAccessToken');
-  const isAuthenticated = Boolean(customerAccessToken);
+  const isAuthenticated = Boolean(auth0UserProfile);
+//  const isAuthenticated = Boolean(customerAccessToken);
   const loginPath = locale ? `/${locale}/account/login` : '/account/login';
   const isAccountPage = /^\/account\/?$/.test(pathname);
 

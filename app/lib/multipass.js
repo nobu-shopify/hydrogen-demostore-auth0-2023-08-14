@@ -3,7 +3,7 @@ import {AES, lib, SHA256, HmacSHA256, enc} from 'crypto-js';
 /**
  * Custom implementation for Multipass
  * This implementsation uses crypto-js library
- * Designed to integrate into Hydrogen
+ * Designed to integrate into Hydrogen storefront
  */
 export class Multipass {
   secret;
@@ -29,7 +29,7 @@ export class Multipass {
   }
 
   // Generate a Multipass token for the given customer data
-  get(customerData) {
+  generateToken(customerData) {
 
     // Store the current time in ISO8601 format.
     customerData.created_at = this.created_at;

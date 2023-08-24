@@ -18,15 +18,15 @@ export const handle = {
 export var authenticator = null;
 export var auth0UserProfile = null;
 
-// for multipass
-export var multipassToken = null;
+export function clearAuth0UserProfile() {
+  auth0UserProfile = null;
+}
 
 export async function loader({context, params}) {
-  const customerAccessToken = await context.session.get('customerAccessToken');
-
-  if (customerAccessToken) {
-    return redirect(params.locale ? `${params.locale}/account` : '/account');
-  }
+//  const customerAccessToken = await context.session.get('customerAccessToken');
+//  if (customerAccessToken) {
+//    return redirect(params.locale ? `${params.locale}/account` : '/account');
+//  }
 
   // TODO: Query for this?
   return (json({shopName: 'Hydrogen'}));
@@ -34,12 +34,17 @@ export async function loader({context, params}) {
 
 const badRequest = (data) => json(data, {status: 400});
 
-export const action = async ({request, context, params}) => {
+export const action = async ({request, context}) => {
+
+  // Construct a callback URL for Auth0
+  const callbackUrl = new URL("/auth0/callback/", request.url).href.toString();
+
   // for Auth0
-  if(!auth0UserProfile) {
+//  if(!auth0UserProfile) {
+  if(!authenticator) {
     let auth0Strategy = new Auth0Strategy(
       {
-        callbackURL: "http://localhost:3000/auth0/callback/",
+        callbackURL: callbackUrl,
         clientID: context.env.AUTH0_CLIENTID,
         clientSecret: context.env.AUTH0_CLIENTSECRET,
         domain: context.env.AUTH0_DOMAIN,
@@ -50,16 +55,16 @@ export const action = async ({request, context, params}) => {
         // ref: https://github.com/danestves/remix-auth-auth0/blob/main/src/index.ts#L27
         // Get the user data from your DB or API using the profile
         //
-        return copyProfile({ profile });
+        return await copyProfile({ profile });
       }
     );
     // Create an instance of the authenticator, pass a generic with what your
     // strategies will return and will be stored in the session
-    const request2 = { ...request };
     authenticator = new Authenticator(sessionStorage);
     authenticator.use(auth0Strategy);
-
+  }
     try {
+      const request2 = { ...request };
       return authenticator.authenticate("auth0", request2);
     }
     catch (error) {
@@ -67,59 +72,17 @@ export const action = async ({request, context, params}) => {
         formError:
           `Auth0 error: ${error}`,
       });
-  }
-
-  }
-
-  const formData = await request.formData();
-  const email = formData.get('email');
-  const password = formData.get('password');
-
-  if (
-    !email ||
-    !password ||
-    typeof email !== 'string' ||
-    typeof password !== 'string'
-  ) {
-    return badRequest({
-      formError: 'Please provide both an email and a password.',
-    });
-  }
-
-  const {session, storefront, cart} = context;
-
-  try {
-    const customerAccessToken = await doLogin(context, {email, password});
-    session.set('customerAccessToken', customerAccessToken);
-
-    // Sync customerAccessToken with existing cart
-    const result = await cart.updateBuyerIdentity({customerAccessToken});
-
-    // Update cart id in cookie
-    const headers = cart.setCartId(result.cart.id);
-
-    headers.append('Set-Cookie', await session.commit());
-
-    return redirect(params.locale ? `/${params.locale}/account` : '/account', {
-      headers,
-    });
-  } catch (error) {
-    if (storefront.isApiError(error)) {
-      return badRequest({
-        formError: 'Something went wrong. Please try again later.',
-      });
     }
-
-    /**
-     * The user did something wrong, but the raw error from the API is not super friendly.
-     * Let's make one up.
-     */
-    return badRequest({
-      formError:
-        'Sorry. We did not recognize either your email or password. Please try to sign in again or create a new account.',
-    });
-  }
+//  }
 };
+
+// for Auth0
+export async function copyProfile( profile ) {
+  // Copy profile
+  auth0UserProfile = profile;
+
+  return { profile };
+}
 
 export const meta = () => {
   return [{title: 'Login'}];
@@ -167,50 +130,4 @@ export default function Login() {
       </div>
     </div>
   );
-}
-
-const LOGIN_MUTATION = `#graphql
-  mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
-    customerAccessTokenCreate(input: $input) {
-      customerUserErrors {
-        code
-        field
-        message
-      }
-      customerAccessToken {
-        accessToken
-        expiresAt
-      }
-    }
-  }
-`;
-
-export async function doLogin({storefront}, {email, password}) {
-  const data = await storefront.mutate(LOGIN_MUTATION, {
-    variables: {
-      input: {
-        email,
-        password,
-      },
-    },
-  });
-
-  if (data?.customerAccessTokenCreate?.customerAccessToken?.accessToken) {
-    return data.customerAccessTokenCreate.customerAccessToken.accessToken;
-  }
-
-  /**
-   * Something is wrong with the user's input.
-   */
-  throw new Error(
-    data?.customerAccessTokenCreate?.customerUserErrors.join(', '),
-  );
-}
-
-// for Auth0
-export async function copyProfile( profile ) {
-  // Copy profile
-  auth0UserProfile = profile;
-
-  return { profile };
 }
