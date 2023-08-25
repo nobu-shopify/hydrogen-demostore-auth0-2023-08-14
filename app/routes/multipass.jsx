@@ -20,15 +20,11 @@ export async function loader ({ context }) {
     console.log('email', auth0UserProfile.profile.emails[0].value);
     const customerData = {
       email: auth0UserProfile.profile.emails[0].value,
-//      "email": "nobu.hayashi+auth0@shopify.com",
     };
     const token = multipass.generateToken(customerData);
 
     // Get customer token
     const {session, storefront, cart} = context;
-    console.log('session', session);
-//    console.log('storefront', storefront);
-//    console.log('cart', cart);
 
     try {
       const customerAccessToken = await doLoginWithMultipass({storefront}, {token});
@@ -40,24 +36,20 @@ export async function loader ({ context }) {
       const result = await cart.updateBuyerIdentity({customerAccessToken});
       console.log('cart updateBuyerIdentity', result);
 
-      // Update cart id in cookie
+      // Update cart id and customer access token in cookie
       const headers = cart.setCartId(result.cart.id);
       console.log('__headers', headers);
       headers.append('Set-Cookie', await session.commit());
       console.log('headers', headers);
-      return redirect('/', {headers});
-  
-//      return redirect(params.locale ? `/${params.locale}/account` : '/account', {
-//        headers,
-//      });
 
-    } catch (error) {
+      return redirect('/account/', {headers});
+    } 
+    catch (error) {
       if (storefront.isApiError(error)) {
         return badRequest({
           formError: 'Something went wrong. Please try again later.',
         });
       }
-  
       /**
        * The user did something wrong, but the raw error from the API is not super friendly.
        * Let's make one up.
@@ -69,7 +61,6 @@ export async function loader ({ context }) {
       });
     }
   }
-
   // Customer info not available - do nothing
   console.log('customer info NOT available - do nothing');
   return redirect('/');

@@ -24,8 +24,6 @@ export class HydrogenSession {
   constructor(sessionStorage, session) {
     this.sessionStorage = sessionStorage;
     this.session = session;
-    this.session = session;
-    this.sessionStorage = sessionStorage;
   }
 
   static async init(request, secrets) {
